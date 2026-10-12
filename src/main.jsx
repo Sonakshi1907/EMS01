@@ -1,5 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import { TaskProvider } from "./context/TaskContext.jsx";
 
 import App from "./App.jsx";
 import "./index.css";
@@ -23,8 +25,12 @@ if (!tasks) {
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <TaskProvider>
+          <App />
+        </TaskProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </StrictMode>,
 );
