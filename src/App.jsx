@@ -30,55 +30,87 @@
 
 // export default App;
 
+// import { Routes, Route, Navigate } from "react-router-dom";
+// import "./App.css";
+
+// import { useAuth } from "./context/AuthContext.jsx";
+// import Login from "./components/Auth/Login.jsx";
+// import AdminDashboard from "./components/Dashboard/AdminDashboard.jsx";
+// import EmployeeDashboard from "./components/Dashboard/EmployeeDashboard.jsx";
+
+// function App() {
+//   const { currentUser } = useAuth();
+
+//   return (
+//     <Routes>
+//       <Route
+//         path="/login"
+//         element={
+//           currentUser ? (
+//             <Navigate
+//               to={currentUser.role === "admin" ? "/admin" : "/employee"}
+//               replace
+//             />
+//           ) : (
+//             <Login />
+//           )
+//         }
+//       />
+
+//       <Route
+//         path="/admin"
+//         element={
+//           currentUser?.role === "admin" ? (
+//             <AdminDashboard />
+//           ) : (
+//             <Navigate to="/login" replace />
+//           )
+//         }
+//       />
+
+//       <Route
+//         path="/employee"
+//         element={
+//           currentUser?.role === "employee" ? (
+//             <EmployeeDashboard />
+//           ) : (
+//             <Navigate to="/login" replace />
+//           )
+//         }
+//       />
+
+//       <Route path="*" element={<Navigate to="/login" replace />} />
+//     </Routes>
+//   );
+// }
+
+// export default App;
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 
-import { useAuth } from "./context/AuthContext.jsx";
 import Login from "./components/Auth/Login.jsx";
 import AdminDashboard from "./components/Dashboard/AdminDashboard.jsx";
 import EmployeeDashboard from "./components/Dashboard/EmployeeDashboard.jsx";
+import ProtectedRoute from "./components/Auth/ProtectedRoute.jsx";
 
 function App() {
-  const { currentUser } = useAuth();
-
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={
-          currentUser ? (
-            <Navigate
-              to={currentUser.role === "admin" ? "/admin" : "/employee"}
-              replace
-            />
-          ) : (
-            <Login />
-          )
-        }
-      />
+      {/* Public route */}
+      <Route path="/login" element={<Login />} />
 
-      <Route
-        path="/admin"
-        element={
-          currentUser?.role === "admin" ? (
-            <AdminDashboard />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      {/* Admin-only route */}
+      <Route element={<ProtectedRoute allowedRole="admin" />}>
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Route>
 
-      <Route
-        path="/employee"
-        element={
-          currentUser?.role === "employee" ? (
-            <EmployeeDashboard />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
+      {/* Employee-only route */}
+      <Route element={<ProtectedRoute allowedRole="employee" />}>
+        <Route path="/employee" element={<EmployeeDashboard />} />
+      </Route>
 
+      {/* Unknown routes */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
