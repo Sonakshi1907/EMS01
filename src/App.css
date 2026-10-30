@@ -432,3 +432,34 @@
     padding: 20px;
   }
 }
+
+.task-filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.task-filters input,
+.task-filters select {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #dbe1ea;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e293b;
+  font: inherit;
+}
+
+.task-filters input:focus,
+.task-filters select:focus {
+  outline: 2px solid #6366f1;
+  outline-offset: 1px;
+}
+
+@media (max-width: 700px) {
+  .task-filters {
+    grid-template-columns: 1fr;
+  }
+}

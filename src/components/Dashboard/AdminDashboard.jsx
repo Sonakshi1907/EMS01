@@ -16,6 +16,9 @@ function AdminDashboard() {
   const [assignedTo, setAssignedTo] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [message, setMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [employeeFilter, setEmployeeFilter] = useState("all");
 
   const completedTasks = tasks.filter(
     (task) => task.status === "completed",
@@ -32,6 +35,22 @@ function AdminDashboard() {
 
     return employee?.name || "Unknown employee";
   };
+
+  const filteredTasks = tasks.filter((task) => {
+    const search = searchTerm.trim().toLowerCase();
+
+    const matchesSearch =
+      task.title?.toLowerCase().includes(search) ||
+      task.description?.toLowerCase().includes(search);
+
+    const matchesStatus =
+      statusFilter === "all" || task.status === statusFilter;
+
+    const matchesEmployee =
+      employeeFilter === "all" || task.assignedTo === employeeFilter;
+
+    return matchesSearch && matchesStatus && matchesEmployee;
+  });
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -159,11 +178,50 @@ function AdminDashboard() {
       <section className="assigned-tasks">
         <h2>Assigned Tasks</h2>
 
-        {tasks.length === 0 ? (
-          <p>No tasks have been assigned yet.</p>
+        <div className="task-filters">
+          <input
+            type="search"
+            placeholder="Search by title or description..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            aria-label="Search tasks"
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            aria-label="Filter by status"
+          >
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+          </select>
+
+          <select
+            value={employeeFilter}
+            onChange={(event) => setEmployeeFilter(event.target.value)}
+            aria-label="Filter by employee"
+          >
+            <option value="all">All Employees</option>
+
+            {employees.map((employee) => (
+              <option key={employee.id} value={employee.email}>
+                {employee.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <p>
+          Showing {filteredTasks.length} of {tasks.length} tasks
+        </p>
+
+        {filteredTasks.length === 0 ? (
+          <p>No matching tasks found.</p>
         ) : (
           <div className="task-list">
-            {tasks.map((task) => (
+            {filteredTasks.map((task) => (
               <article className="task-card" key={task.id}>
                 <h3>{task.title}</h3>
                 <p>Assigned to: {getEmployeeName(task)}</p>
