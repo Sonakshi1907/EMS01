@@ -5,7 +5,7 @@ import { getFromStorage } from "../../utils/localStorage.js";
 
 function AdminDashboard() {
   const { currentUser, logout } = useAuth();
-  const { tasks, addTask } = useTasks();
+  const { tasks, addTask, updateTask, deleteTask } = useTasks();
 
   const storedUsers = getFromStorage("users");
   const users = Array.isArray(storedUsers) ? storedUsers : [];
@@ -19,6 +19,8 @@ function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [employeeFilter, setEmployeeFilter] = useState("all");
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const completedTasks = tasks.filter(
     (task) => task.status === "completed",
@@ -52,6 +54,35 @@ function AdminDashboard() {
     return matchesSearch && matchesStatus && matchesEmployee;
   });
 
+  const handleEdit = (task) => {
+    setEditingTaskId(task.id);
+    setTitle(task.title);
+    setDescription(task.description || "");
+    setAssignedTo(task.assignedTo);
+    setDueDate(task.dueDate || "");
+    setIsEditing(true);
+    setMessage("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+    setTitle("");
+    setDescription("");
+    setAssignedTo("");
+    setDueDate("");
+    setIsEditing(false);
+    setMessage("");
+  };
+  const handleDelete = (task) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${task.title}"?`,
+    );
+
+    if (!confirmed) return;
+
+    deleteTask(task.id);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     setMessage("");
@@ -61,12 +92,32 @@ function AdminDashboard() {
       return;
     }
 
-    addTask({
-      title: title.trim(),
-      description: description.trim(),
-      assignedTo,
-      dueDate,
-    });
+    if (isEditing) {
+      updateTask(editingTaskId, {
+        title: title.trim(),
+        description: description.trim(),
+        assignedTo,
+        dueDate,
+      });
+
+      setMessage("Task updated successfully!");
+    } else {
+      addTask({
+        title: title.trim(),
+        description: description.trim(),
+        assignedTo,
+        dueDate,
+      });
+
+      setMessage("Task assigned successfully!");
+    }
+
+    setTitle("");
+    setDescription("");
+    setAssignedTo("");
+    setDueDate("");
+    setEditingTaskId(null);
+    setIsEditing(false);
 
     setTitle("");
     setDescription("");
@@ -165,7 +216,15 @@ function AdminDashboard() {
             />
           </div>
 
-          <button type="submit">Assign Task</button>
+          <button type="submit">
+            {isEditing ? "Save Changes" : "Assign Task"}
+          </button>
+
+          {isEditing && (
+            <button type="button" onClick={handleCancelEdit}>
+              Cancel Edit
+            </button>
+          )}
 
           {message && (
             <p role="status" aria-live="polite">
@@ -230,6 +289,12 @@ function AdminDashboard() {
                 {task.description && <p>{task.description}</p>}
 
                 {task.dueDate && <p>Due date: {task.dueDate}</p>}
+                <button type="button" onClick={() => handleEdit(task)}>
+                  Edit Task
+                </button>
+                <button type="button" onClick={() => handleDelete(task)}>
+                  Delete Task
+                </button>
               </article>
             ))}
           </div>

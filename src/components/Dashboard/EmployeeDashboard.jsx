@@ -22,6 +22,19 @@ function EmployeeDashboard() {
   const formatStatus = (status = "pending") =>
     status.charAt(0).toUpperCase() + status.slice(1);
 
+  const isOverdue = (task) => {
+    if (!task.dueDate || task.status !== "pending") {
+      return false;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dueDate = new Date(`${task.dueDate}T00:00:00`);
+
+    return dueDate < today;
+  };
+
   return (
     <main className="dashboard employee-dashboard">
       <header className="dashboard-header">
@@ -83,20 +96,39 @@ function EmployeeDashboard() {
                   </p>
                 )}
 
-                <div className="task-actions">
-                  <button
-                    type="button"
-                    onClick={() => updateTaskStatus(task.id, "completed")}
-                  >
-                    Mark Completed
-                  </button>
+                {isOverdue(task) && (
+                  <p className="overdue-label" role="status">
+                    Overdue — deadline has passed
+                  </p>
+                )}
 
-                  <button
-                    type="button"
-                    onClick={() => updateTaskStatus(task.id, "failed")}
-                  >
-                    Mark Failed
-                  </button>
+                <div className="task-actions">
+                  {task.status !== "completed" && (
+                    <button
+                      type="button"
+                      onClick={() => updateTaskStatus(task.id, "completed")}
+                    >
+                      Mark Completed
+                    </button>
+                  )}
+
+                  {task.status !== "failed" && (
+                    <button
+                      type="button"
+                      onClick={() => updateTaskStatus(task.id, "failed")}
+                    >
+                      Mark Failed
+                    </button>
+                  )}
+
+                  {task.status !== "pending" && (
+                    <button
+                      type="button"
+                      onClick={() => updateTaskStatus(task.id, "pending")}
+                    >
+                      Reset to Pending
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

@@ -44,12 +44,29 @@ export function TaskProvider({ children }) {
     );
   };
 
+  // Admin existing task ki details edit kar sakta hai.
+  const updateTask = (taskId, updatedDetails) => {
+    setTasks((previousTasks) =>
+      previousTasks.map((task) =>
+        task.id === taskId ? { ...task, ...updatedDetails } : task,
+      ),
+    );
+  };
+
+  const deleteTask = (taskId) => {
+    setTasks((previousTasks) =>
+      previousTasks.filter((task) => task.id !== taskId),
+    );
+  };
+
   return (
     <TaskContext.Provider
       value={{
         tasks,
         addTask,
         updateTaskStatus,
+        updateTask,
+        deleteTask,
       }}
     >
       {children}
