@@ -6,6 +6,7 @@ import { getFromStorage } from "../../utils/localStorage.js";
 function AdminDashboard() {
   const { currentUser, logout } = useAuth();
   const { tasks, addTask, updateTask, deleteTask } = useTasks();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const storedUsers = getFromStorage("users");
   const users = Array.isArray(storedUsers) ? storedUsers : [];
@@ -143,75 +144,256 @@ function AdminDashboard() {
   };
 
   return (
-    <main className="dashboard">
-      <header className="dashboard-header">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p>Welcome, {currentUser?.name || "Admin"}</p>
+    <div className="dashboard-shell">
+      {/* Mobile backdrop */}
+      {isSidebarOpen && (
+        <button
+          type="button"
+          className="sidebar-backdrop"
+          aria-label="Close navigation menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`app-sidebar ${isSidebarOpen ? "is-open" : ""}`}
+        aria-label="Main navigation"
+      >
+        <a
+          href="#overview"
+          className="sidebar-brand"
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <span className="brand-icon" aria-hidden="true">
+            ✳
+          </span>
+          <span>
+            <strong>TaskFlow</strong>
+            <small>EMPLOYEE MANAGEMENT</small>
+          </span>
+        </a>
+
+        <nav className="sidebar-nav">
+          <a
+            href="#overview"
+            className="sidebar-link active"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <span aria-hidden="true">▦</span>
+            Dashboard
+          </a>
+
+          <a
+            href="#tasks"
+            className="sidebar-link"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <span aria-hidden="true">▤</span>
+            Assigned Tasks
+          </a>
+
+          <a
+            href="#employees"
+            className="sidebar-link"
+            onClick={() => setIsSidebarOpen(false)}
+          >
+            <span aria-hidden="true">♙</span>
+            Employees
+          </a>
+        </nav>
+
+        <div className="sidebar-footer">
+          <span className="sidebar-avatar" aria-hidden="true">
+            {(currentUser?.name || "A").charAt(0).toUpperCase()}
+          </span>
+          <div className="sidebar-user">
+            <strong>{currentUser?.name || "Admin"}</strong>
+            <small>Administrator</small>
+          </div>
         </div>
+      </aside>
 
-        <button onClick={logout}>Logout</button>
-      </header>
-
-      <section className="dashboard-stats">
-        <article className="stat-card">
-          <h3>Total Tasks</h3>
-          <p>{tasks.length}</p>
-        </article>
-
-        <article className="stat-card">
-          <h3>Pending</h3>
-          <p>{pendingTasks}</p>
-        </article>
-
-        <article className="stat-card">
-          <h3>Completed</h3>
-          <p>{completedTasks}</p>
-        </article>
-
-        <article className="stat-card">
-          <h3>Failed</h3>
-          <p>{failedTasks}</p>
-        </article>
-      </section>
-
-      <section className="task-form-section">
-        <h2>Assign a New Task</h2>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="task-title">Task Title</label>
-            <input
-              id="task-title"
-              type="text"
-              placeholder="Enter task title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="task-description">Description</label>
-            <textarea
-              id="task-description"
-              placeholder="Describe the task"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              rows={4}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="assigned-employee">Assign To</label>
-            <select
-              id="assigned-employee"
-              value={assignedTo}
-              onChange={(event) => setAssignedTo(event.target.value)}
-              required
+      {/* Main dashboard */}
+      <main className="dashboard dashboard-content" id="overview">
+        <header className="dashboard-header">
+          <div className="header-title">
+            <button
+              type="button"
+              className="mobile-menu-button"
+              aria-label="Open navigation menu"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen((open) => !open)}
             >
-              <option value="">Select an employee</option>
+              ☰
+            </button>
 
+            <div>
+              <p className="page-eyebrow">WORKSPACE / ADMIN</p>
+              <h1>Dashboard Overview</h1>
+              <p>Welcome back, {currentUser?.name || "Admin"}!</p>
+            </div>
+          </div>
+
+          <button type="button" className="logout-button" onClick={logout}>
+            Logout
+          </button>
+        </header>
+
+        <section className="dashboard-stats" aria-label="Task statistics">
+          <article className="stat-card">
+            <span className="stat-icon stat-icon-blue" aria-hidden="true">
+              ▤
+            </span>
+            <h3>Total Tasks</h3>
+            <p>{tasks.length}</p>
+          </article>
+
+          <article className="stat-card">
+            <span className="stat-icon stat-icon-amber" aria-hidden="true">
+              ◷
+            </span>
+            <h3>Pending</h3>
+            <p>{pendingTasks}</p>
+          </article>
+
+          <article className="stat-card">
+            <span className="stat-icon stat-icon-green" aria-hidden="true">
+              ✓
+            </span>
+            <h3>Completed</h3>
+            <p>{completedTasks}</p>
+          </article>
+
+          <article className="stat-card">
+            <span className="stat-icon stat-icon-red" aria-hidden="true">
+              ×
+            </span>
+            <h3>Failed</h3>
+            <p>{failedTasks}</p>
+          </article>
+        </section>
+
+        <section className="task-form-section" id="assign-task">
+          <div className="section-heading">
+            <div>
+              <h2>{isEditing ? "Edit Task" : "Assign a New Task"}</h2>
+              <p>Create an assignment for one of your employees.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="task-title">Task Title</label>
+              <input
+                id="task-title"
+                type="text"
+                placeholder="Enter task title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="task-description">Description</label>
+              <textarea
+                id="task-description"
+                placeholder="Describe the task"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                rows={4}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="assigned-employee">Assign To</label>
+              <select
+                id="assigned-employee"
+                value={assignedTo}
+                onChange={(event) => setAssignedTo(event.target.value)}
+                required
+              >
+                <option value="">Select an employee</option>
+                {employees.map((employee) => (
+                  <option key={employee.id} value={employee.email}>
+                    {employee.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="task-due-date">Due Date</label>
+              <input
+                id="task-due-date"
+                type="date"
+                value={dueDate}
+                min={new Date().toLocaleDateString("en-CA")}
+                onChange={(event) => setDueDate(event.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-actions">
+              <button type="submit" className="primary-button">
+                {isEditing ? "Save Changes" : "Assign Task"}
+              </button>
+
+              {isEditing && (
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={handleCancelEdit}
+                >
+                  Cancel Edit
+                </button>
+              )}
+            </div>
+
+            {message && (
+              <p className="form-message" role="status" aria-live="polite">
+                {message}
+              </p>
+            )}
+          </form>
+        </section>
+
+        <section className="assigned-tasks" id="tasks">
+          <div className="section-heading">
+            <div>
+              <h2>Assigned Tasks</h2>
+              <p>Manage and track tasks assigned to your team.</p>
+            </div>
+            <span className="task-count">{filteredTasks.length} tasks</span>
+          </div>
+
+          <div className="task-filters">
+            <input
+              type="search"
+              placeholder="Search by title or description..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              aria-label="Search tasks"
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              aria-label="Filter by status"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Failed</option>
+            </select>
+
+            <select
+              value={employeeFilter}
+              onChange={(event) => setEmployeeFilter(event.target.value)}
+              aria-label="Filter by employee"
+            >
+              <option value="all">All Employees</option>
               {employees.map((employee) => (
                 <option key={employee.id} value={employee.email}>
                   {employee.name}
@@ -220,119 +402,96 @@ function AdminDashboard() {
             </select>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="task-due-date">Due Date</label>
-            <input
-              id="task-due-date"
-              type="date"
-              value={dueDate}
-              min={new Date().toLocaleDateString("en-CA")}
-              onChange={(event) => setDueDate(event.target.value)}
-              required
-            />
-          </div>
+          <p className="results-count">
+            Showing {filteredTasks.length} of {tasks.length} tasks
+          </p>
 
-          <button type="submit">
-            {isEditing ? "Save Changes" : "Assign Task"}
-          </button>
-
-          {isEditing && (
-            <button type="button" onClick={handleCancelEdit}>
-              Cancel Edit
-            </button>
-          )}
-
-          {message && (
-            <p role="status" aria-live="polite">
-              {message}
+          {filteredTasks.length === 0 ? (
+            <p className="empty-state">
+              {tasks.length === 0
+                ? "No tasks yet. Assign your first task above."
+                : "No tasks match your current filters."}
             </p>
+          ) : (
+            <div className="task-list">
+              {filteredTasks.map((task) => (
+                <article className="task-card" key={task.id}>
+                  <div className="task-card-heading">
+                    <h3>{task.title}</h3>
+                    <span
+                      className={`status-badge status-${task.status || "pending"}`}
+                    >
+                      {task.status || "pending"}
+                    </span>
+                  </div>
+
+                  <p>
+                    <strong>Assigned to:</strong> {getEmployeeName(task)}
+                  </p>
+
+                  {task.description && <p>{task.description}</p>}
+
+                  {task.dueDate && (
+                    <p>
+                      <strong>Due date:</strong> {task.dueDate}
+                    </p>
+                  )}
+
+                  <div className="task-card-actions">
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => handleEdit(task)}
+                    >
+                      Edit Task
+                    </button>
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() => handleDelete(task)}
+                    >
+                      Delete Task
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
-        </form>
-      </section>
+        </section>
 
-      <section className="assigned-tasks">
-        <h2>Assigned Tasks</h2>
-
-        <div className="task-filters">
-          <input
-            type="search"
-            placeholder="Search by title or description..."
-            value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
-            aria-label="Search tasks"
-          />
-
-          <select
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value)}
-            aria-label="Filter by status"
-          >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="completed">Completed</option>
-            <option value="failed">Failed</option>
-          </select>
-
-          <select
-            value={employeeFilter}
-            onChange={(event) => setEmployeeFilter(event.target.value)}
-            aria-label="Filter by employee"
-          >
-            <option value="all">All Employees</option>
-
-            {employees.map((employee) => (
-              <option key={employee.id} value={employee.email}>
-                {employee.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <p>
-          Showing {filteredTasks.length} of {tasks.length} tasks
-        </p>
-
-        {filteredTasks.length === 0 ? (
-          <p>No matching tasks found.</p>
-        ) : (
-          <div className="task-list">
-            {filteredTasks.map((task) => (
-              <article className="task-card" key={task.id}>
-                <h3>{task.title}</h3>
-                <p>Assigned to: {getEmployeeName(task)}</p>
-                <p>Status: {task.status}</p>
-
-                {task.description && <p>{task.description}</p>}
-
-                {task.dueDate && <p>Due date: {task.dueDate}</p>}
-                <button type="button" onClick={() => handleEdit(task)}>
-                  Edit Task
-                </button>
-                <button type="button" onClick={() => handleDelete(task)}>
-                  Delete Task
-                </button>
-              </article>
-            ))}
+        <section className="employees-section" id="employees">
+          <div className="section-heading">
+            <div>
+              <h2>Employees</h2>
+              <p>People currently registered in your workspace.</p>
+            </div>
+            <span className="task-count">{employees.length} employees</span>
           </div>
-        )}
-      </section>
 
-      <section className="employees-section">
-        <h2>Employees</h2>
+          {employees.length === 0 ? (
+            <p className="empty-state">No employees found.</p>
+          ) : (
+            <ul className="employee-list">
+              {employees.map((employee) => (
+                <li key={employee.id}>
+                  <span className="employee-avatar" aria-hidden="true">
+                    {employee.name.charAt(0).toUpperCase()}
+                  </span>
+                  <div className="employee-details">
+                    <strong>{employee.name}</strong>
+                    <span>{employee.email}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
-        {employees.length === 0 ? (
-          <p>No employees found.</p>
-        ) : (
-          <ul>
-            {employees.map((employee) => (
-              <li key={employee.id}>
-                {employee.name} — {employee.email}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-    </main>
+        <footer className="dashboard-footer">
+          Employee Management System · Admin Workspace
+        </footer>
+      </main>
+    </div>
   );
 }
 
