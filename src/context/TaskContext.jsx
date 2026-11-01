@@ -45,10 +45,19 @@ export function TaskProvider({ children }) {
   };
 
   // Admin existing task ki details edit kar sakta hai.
+
   const updateTask = (taskId, updatedDetails) => {
+    const allowedFields = ["title", "description", "assignedTo", "dueDate"];
+
+    const safeDetails = Object.fromEntries(
+      Object.entries(updatedDetails).filter(([key]) =>
+        allowedFields.includes(key),
+      ),
+    );
+
     setTasks((previousTasks) =>
       previousTasks.map((task) =>
-        task.id === taskId ? { ...task, ...updatedDetails } : task,
+        task.id === taskId ? { ...task, ...safeDetails } : task,
       ),
     );
   };
