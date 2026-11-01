@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTasks } from "../../context/TaskContext.jsx";
 
 function EmployeeDashboard() {
   const { currentUser, logout } = useAuth();
   const { tasks, updateTaskStatus } = useTasks();
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   if (!currentUser) {
     return <p>Please login to continue.</p>;
@@ -18,6 +22,19 @@ function EmployeeDashboard() {
   const completedTasks = myTasks.filter((task) => task.status === "completed");
   const failedTasks = myTasks.filter((task) => task.status === "failed");
   const pendingTasks = myTasks.filter((task) => task.status === "pending");
+
+  const filteredTasks = myTasks.filter((task) => {
+    const search = searchTerm.trim().toLowerCase();
+
+    const matchesSearch =
+      (task.title || "").toLowerCase().includes(search) ||
+      (task.description || "").toLowerCase().includes(search);
+
+    const matchesStatus =
+      statusFilter === "all" || task.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const formatStatus = (status = "pending") =>
     status.charAt(0).toUpperCase() + status.slice(1);
@@ -73,11 +90,40 @@ function EmployeeDashboard() {
       <section className="assigned-tasks">
         <h2>My Tasks</h2>
 
-        {myTasks.length === 0 ? (
-          <p>No tasks assigned yet.</p>
+        <div className="task-filters">
+          <input
+            type="search"
+            placeholder="Search tasks by title or description..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            aria-label="Search my tasks"
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            aria-label="Filter tasks by status"
+          >
+            <option value="all">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+
+        <p>
+          Showing {filteredTasks.length} of {myTasks.length} tasks
+        </p>
+
+        {filteredTasks.length === 0 ? (
+          <p>
+            {myTasks.length === 0
+              ? "No tasks assigned yet."
+              : "No tasks match your search or filter."}
+          </p>
         ) : (
           <div className="task-list">
-            {myTasks.map((task) => (
+            {filteredTasks.map((task) => (
               <article className="task-card" key={task.id}>
                 <h3>{task.title}</h3>
 
