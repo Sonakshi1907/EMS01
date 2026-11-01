@@ -87,28 +87,50 @@ function AdminDashboard() {
     event.preventDefault();
     setMessage("");
 
-    if (!title.trim() || !assignedTo || !dueDate) {
-      setMessage("Please fill in the title, employee and due date.");
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+
+    // Validate task title
+    if (!trimmedTitle) {
+      setMessage("Task title cannot be empty or contain only spaces.");
       return;
     }
 
-    if (isEditing) {
-      updateTask(editingTaskId, {
-        title: title.trim(),
-        description: description.trim(),
-        assignedTo,
-        dueDate,
-      });
+    // Validate employee selection
+    const employeeExists = employees.some(
+      (employee) => employee.email === assignedTo,
+    );
 
+    if (!employeeExists) {
+      setMessage("Please select a valid employee.");
+      return;
+    }
+
+    // Validate due date
+    if (!dueDate) {
+      setMessage("Please select a due date.");
+      return;
+    }
+
+    // Ensure the selected employee and date are valid
+    const selectedDate = new Date(`${dueDate}T00:00:00`);
+    if (Number.isNaN(selectedDate.getTime())) {
+      setMessage("Please enter a valid due date.");
+      return;
+    }
+
+    const taskDetails = {
+      title: trimmedTitle,
+      description: trimmedDescription,
+      assignedTo,
+      dueDate,
+    };
+
+    if (isEditing) {
+      updateTask(editingTaskId, taskDetails);
       setMessage("Task updated successfully!");
     } else {
-      addTask({
-        title: title.trim(),
-        description: description.trim(),
-        assignedTo,
-        dueDate,
-      });
-
+      addTask(taskDetails);
       setMessage("Task assigned successfully!");
     }
 
@@ -118,12 +140,6 @@ function AdminDashboard() {
     setDueDate("");
     setEditingTaskId(null);
     setIsEditing(false);
-
-    setTitle("");
-    setDescription("");
-    setAssignedTo("");
-    setDueDate("");
-    setMessage("Task assigned successfully!");
   };
 
   return (
