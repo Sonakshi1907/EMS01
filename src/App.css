@@ -1208,3 +1208,60 @@
     transition: none;
   }
 }
+
+/* ===== Dashboard visual refinements ===== */
+
+/* 1. Give the welcome message stronger contrast */
+.dashboard-content .dashboard-header p:not(.page-eyebrow) {
+  color: #4f46e5;
+}
+
+/* Keep the workspace label subtle */
+.dashboard-content .page-eyebrow {
+  color: #64748b !important;
+}
+
+/* 2. Make the Logout button more professional */
+.dashboard-content .logout-button {
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  color: #4338ca;
+  border-radius: 9px;
+  box-shadow: none;
+}
+
+.dashboard-content .logout-button:hover {
+  background: #e0e7ff;
+  border-color: #818cf8;
+  color: #3730a3;
+}
+
+/* 3. Use a softer shade for the mobile menu button */
+.dashboard-content .mobile-menu-button {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4338ca;
+}
+
+.dashboard-content .mobile-menu-button:hover {
+  background: #e0e7ff;
+  border-color: #818cf8;
+  color: #3730a3;
+}
+
+/* 4. Make card borders darker on hover */
+.dashboard-content .stat-card:hover,
+.dashboard-content .task-card:hover {
+  border-color: #818cf8;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.09);
+}
+
+/* Make input and select borders more visible on focus */
+.dashboard-content .task-filters input:focus,
+.dashboard-content .task-filters select:focus,
+.dashboard-content .form-group input:focus,
+.dashboard-content .form-group textarea:focus,
+.dashboard-content .form-group select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+}
